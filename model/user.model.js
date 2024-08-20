@@ -17,15 +17,15 @@ const userSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        required: false,
+        required: true,
     },
     farmnname: {
         type: String,
-        required: false,
+        required: true,
     },
     farmcode: {
         type: String,
-        required: false,
+        required: true,
     },
 }, { timestamps: true });
 
