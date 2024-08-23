@@ -1,0 +1,2 @@
+MONGO = 'mongodb+srv://thipanemp:alxfinal@poultry-farm-app.gtcoj.mongodb.net/poultry-farm-app?retryWrites=true&w=majority&appName=poultry-farm-app'
+JWT_SECRET = 'pmosaic'
