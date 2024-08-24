@@ -4,9 +4,9 @@ const errorHandling = require("../utils/error");
 const jwt = require('jsonwebtoken');
 
 const signup = async (req, res, next) => {
-    const { username, email, password } = req.body;
+    const { username, email, password, role, farm_id } = req.body;
 
-    if (!username || !email || !password || username === '' || email === '' || password === '') {
+    if (!username || !email || !password || !role || !farm_id) {
         return next(errorHandling(400, 'All fields are required'));
     }
 
@@ -15,7 +15,9 @@ const signup = async (req, res, next) => {
     const newUser = new User({
         username,
         email,
-        password: hashPassword, // Save the hashed password
+        password: hashPassword,
+        role,
+        farm: farm_id,
     });
 
     try {
@@ -25,6 +27,7 @@ const signup = async (req, res, next) => {
         next(error);
     }
 };
+
 
 const signin = async (req, res, next) => {
     const { email, password } = req.body;
