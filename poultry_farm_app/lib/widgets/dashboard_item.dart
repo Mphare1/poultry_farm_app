@@ -5,7 +5,12 @@ class DashboardItem extends StatelessWidget {
   final IconData icon;
   final String route;
 
-  DashboardItem({required this.title, required this.icon, required this.route});
+  const DashboardItem({
+    Key? key,
+    required this.title,
+    required this.icon,
+    required this.route,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -13,37 +18,36 @@ class DashboardItem extends StatelessWidget {
       onTap: () {
         Navigator.pushNamed(context, route);
       },
-      child: Card(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-        ),
-        elevation: 8,
-        shadowColor: Colors.teal.withOpacity(0.5),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.teal.shade200, Colors.teal.shade500],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.shade400,
+              offset: Offset(0, 4),
+              blurRadius: 6,
             ),
-            borderRadius: BorderRadius.circular(15),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 60, color: Colors.white),
-              SizedBox(height: 10),
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 50,
+              color: Colors.teal,
+            ),
+            SizedBox(height: 8),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.teal.shade800,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

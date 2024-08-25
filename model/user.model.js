@@ -19,13 +19,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    farmnname: {
+    farm_name: {  // Corrected field name
         type: String,
-        required: true,
-    },
-    farmcode: {
-        type: String,
-        required: true,
+        // Make this field optional
+        required: false,
     },
 }, { timestamps: true });
 

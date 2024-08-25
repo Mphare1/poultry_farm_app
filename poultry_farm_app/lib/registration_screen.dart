@@ -15,15 +15,19 @@ class _RegScreenState extends State<RegScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
       TextEditingController();
+  final TextEditingController _farmNameController =
+      TextEditingController(); // Add this for farm name
+
+  String _selectedRole = 'worker'; // Default role
 
   Future<void> _signup() async {
     final String name = _nameController.text;
     final String email = _emailController.text;
     final String password = _passwordController.text;
     final String confirmPassword = _confirmPasswordController.text;
+    final String farmName = _farmNameController.text;
 
     if (password != confirmPassword) {
-      // Show error message
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Passwords do not match')),
       );
@@ -32,25 +36,37 @@ class _RegScreenState extends State<RegScreen> {
 
     const String url = 'http://10.0.2.2:3000/api/auth/signup';
 
-    final response = await http.post(
-      Uri.parse(url),
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode({
-        'username': name,
-        'email': email,
-        'password': password,
-      }),
-    );
-
-    if (response.statusCode == 201) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('User created successfully')),
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'username': name,
+          'email': email,
+          'password': password,
+          'role': _selectedRole,
+          'farm_name': _selectedRole == 'owner' || _selectedRole == 'manager'
+              ? farmName
+              : null,
+        }),
       );
-      Navigator.pushReplacementNamed(
-          context, '/dashboard'); // Navigate to dashboard
-    } else {
+
+      if (response.statusCode == 201) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('User created successfully')),
+        );
+        Navigator.pushReplacementNamed(context, '/dashboard');
+      } else {
+        final responseData = json.decode(response.body);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content:
+                  Text('Failed to create user: ${responseData['message']}')),
+        );
+      }
+    } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to create user')),
+        SnackBar(content: Text('Network error: ${error.toString()}')),
       );
     }
   }
@@ -158,6 +174,41 @@ class _RegScreenState extends State<RegScreen> {
                             ),
                           )),
                     ),
+                    // Add a dropdown to select role
+                    DropdownButton<String>(
+                      value: _selectedRole,
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          _selectedRole = newValue!;
+                        });
+                      },
+                      items: <String>['owner', 'manager', 'worker']
+                          .map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                    ),
+                    // Add a text field for farm name if role is owner or manager
+                    if (_selectedRole == 'owner' ||
+                        _selectedRole == 'manager') ...[
+                      TextField(
+                        controller: _farmNameController,
+                        decoration: const InputDecoration(
+                            suffixIcon: Icon(
+                              Icons.business,
+                              color: Colors.grey,
+                            ),
+                            label: Text(
+                              'Farm Name',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xffB81736),
+                              ),
+                            )),
+                      ),
+                    ],
                     const SizedBox(
                       height: 10,
                     ),

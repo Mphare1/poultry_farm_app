@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const Farm = require('./farm.model');
+const Farm = require('./farm.model.js');
 
 const staffSchema = new mongoose.Schema({
     farm_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Farm', required: true },

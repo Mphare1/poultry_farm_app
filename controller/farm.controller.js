@@ -2,25 +2,30 @@ const Farm = require('../models/farm.model');
 
 const createFarm = async (req, res, next) => {
     try {
-        const { name, code, location, type } = req.body;
+        const { farm_name, farm_code, owner } = req.body;
+
+        if (!farm_name || !farm_code || !owner) {
+            return res.status(400).json({ message: 'Farm name, code, and owner are required' });
+        }
 
         const newFarm = new Farm({
-            name,
-            code,
-            location,
-            type,
+            farm_name, // Ensure this matches the schema
+            farm_code, // Ensure this matches the schema
+            owner, // Ensure this matches the schema
         });
 
         await newFarm.save();
-        res.status(201).json({ message: 'Farm created successfully' });
+        res.status(201).json({ message: 'Farm created successfully', farm: newFarm });
     } catch (error) {
         next(error);
     }
 };
 
+
 const getFarms = async (req, res, next) => {
     try {
-        const farms = await Farm.find().populate('users');
+        // Populate 'owner' field instead of 'users'
+        const farms = await Farm.find().populate('owner');
         res.status(200).json(farms);
     } catch (error) {
         next(error);
@@ -29,7 +34,8 @@ const getFarms = async (req, res, next) => {
 
 const getFarm = async (req, res, next) => {
     try {
-        const farm = await Farm.findById(req.params.id).populate('users');
+        // Populate 'owner' field instead of 'users'
+        const farm = await Farm.findById(req.params.id).populate('owner');
         if (!farm) return res.status(404).json({ message: 'Farm not found' });
         res.status(200).json(farm);
     } catch (error) {
@@ -39,7 +45,8 @@ const getFarm = async (req, res, next) => {
 
 const updateFarm = async (req, res, next) => {
     try {
-        const updatedFarm = await Farm.findByIdAndUpdate(req.params.id, req.body, { new: true }).populate('users');
+        // Populate 'owner' field instead of 'users'
+        const updatedFarm = await Farm.findByIdAndUpdate(req.params.id, req.body, { new: true }).populate('owner');
         if (!updatedFarm) return res.status(404).json({ message: 'Farm not found' });
         res.status(200).json(updatedFarm);
     } catch (error) {
