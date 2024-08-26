@@ -12,6 +12,7 @@ const farmSchema = new mongoose.Schema({
         required: true,
         unique: true
     },
+    
     owner: { // Reference to User who is the farm owner
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',

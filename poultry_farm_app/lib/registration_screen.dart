@@ -15,10 +15,11 @@ class _RegScreenState extends State<RegScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
       TextEditingController();
-  final TextEditingController _farmNameController =
-      TextEditingController(); // Add this for farm name
+  final TextEditingController _farmNameController = TextEditingController();
+  final TextEditingController _signUpCodeController =
+      TextEditingController(); // Controller for sign-up code
 
-  String _selectedRole = 'worker'; // Default role
+  String _selectedRole = 'owner'; // Default role is owner
 
   Future<void> _signup() async {
     final String name = _nameController.text;
@@ -26,6 +27,7 @@ class _RegScreenState extends State<RegScreen> {
     final String password = _passwordController.text;
     final String confirmPassword = _confirmPasswordController.text;
     final String farmName = _farmNameController.text;
+    final String signUpCode = _signUpCodeController.text;
 
     if (password != confirmPassword) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -34,21 +36,35 @@ class _RegScreenState extends State<RegScreen> {
       return;
     }
 
-    const String url = 'http://10.0.2.2:3000/api/auth/signup';
+    String url;
+    Map<String, dynamic> body;
+
+    if (_selectedRole == 'worker') {
+      // Staff registration with sign-up code
+      url = 'http://10.0.2.2:3000/api/auth/signup-with-code';
+      body = {
+        'code': signUpCode,
+        'email': email,
+        'password': password,
+        'name': name,
+      };
+    } else {
+      // Owner/Manager registration with farm creation
+      url = 'http://10.0.2.2:3000/api/auth/signup';
+      body = {
+        'username': name,
+        'email': email,
+        'password': password,
+        'role': _selectedRole,
+        'farm_name': farmName,
+      };
+    }
 
     try {
       final response = await http.post(
         Uri.parse(url),
         headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'username': name,
-          'email': email,
-          'password': password,
-          'role': _selectedRole,
-          'farm_name': _selectedRole == 'owner' || _selectedRole == 'manager'
-              ? farmName
-              : null,
-        }),
+        body: json.encode(body),
       );
 
       if (response.statusCode == 201) {
@@ -208,6 +224,22 @@ class _RegScreenState extends State<RegScreen> {
                               ),
                             )),
                       ),
+                    ] else ...[
+                      TextField(
+                        controller: _signUpCodeController,
+                        decoration: const InputDecoration(
+                            suffixIcon: Icon(
+                              Icons.code,
+                              color: Colors.grey,
+                            ),
+                            label: Text(
+                              'Sign-Up Code',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xffB81736),
+                              ),
+                            )),
+                      ),
                     ],
                     const SizedBox(
                       height: 10,
@@ -248,7 +280,7 @@ class _RegScreenState extends State<RegScreen> {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Text(
-                            "Don't have account?",
+                            "Don't have an account?",
                             style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: Colors.grey),

@@ -1,21 +1,36 @@
-const Staff = require('../models/staff.model');
-const errorHandling = require('../utils/error');
+const Staff = require('../model/staff.model'); // Assuming you have a Staff model
+const Farm = require('../model/farm.model');  // Import the Farm model
+const SignUpCode = require('../model/signUpCode.model'); 
+const errorHandling = require("../utils/error.js");
+const crypto = require('crypto');
 
 // Create a new staff record
 const createStaffRecord = async (req, res, next) => {
+    const { name, role, farm_id } = req.body;
+
+    if (!name || !role || !farm_id) {
+        return next(errorHandling(400, 'All fields are required'));
+    }
+
     try {
-        const staff = new Staff(req.body);
-        const savedStaff = await staff.save();
-        res.status(201).json(savedStaff);
+        const newStaff = new Staff({
+            name,
+            role,
+            farm: farm_id,
+        });
+
+        await newStaff.save();
+        res.status(201).json({ message: 'Staff record created successfully', staff: newStaff });
     } catch (error) {
         next(error);
     }
 };
 
-// Get all staff records for a farm
+// Get all staff records for a specific farm
 const getStaffRecords = async (req, res, next) => {
+    const { farm_id } = req.params;
+
     try {
-        const { farm_id } = req.params;
         const staffRecords = await Staff.find({ farm: farm_id });
         res.status(200).json(staffRecords);
     } catch (error) {
@@ -25,13 +40,14 @@ const getStaffRecords = async (req, res, next) => {
 
 // Get a single staff record by ID
 const getStaffRecord = async (req, res, next) => {
+    const { id } = req.params;
+
     try {
-        const { id } = req.params;
-        const staff = await Staff.findById(id);
-        if (!staff) {
-            return next(errorHandling(404, 'Staff member not found'));
+        const staffRecord = await Staff.findById(id);
+        if (!staffRecord) {
+            return next(errorHandling(404, 'Staff record not found'));
         }
-        res.status(200).json(staff);
+        res.status(200).json(staffRecord);
     } catch (error) {
         next(error);
     }
@@ -39,13 +55,21 @@ const getStaffRecord = async (req, res, next) => {
 
 // Update a staff record by ID
 const updateStaffRecord = async (req, res, next) => {
+    const { id } = req.params;
+    const { name, role } = req.body;
+
     try {
-        const { id } = req.params;
-        const updatedStaff = await Staff.findByIdAndUpdate(id, req.body, { new: true });
+        const updatedStaff = await Staff.findByIdAndUpdate(
+            id,
+            { name, role },
+            { new: true } // Return the updated document
+        );
+
         if (!updatedStaff) {
-            return next(errorHandling(404, 'Staff member not found'));
+            return next(errorHandling(404, 'Staff record not found'));
         }
-        res.status(200).json(updatedStaff);
+
+        res.status(200).json({ message: 'Staff record updated successfully', staff: updatedStaff });
     } catch (error) {
         next(error);
     }
@@ -53,13 +77,16 @@ const updateStaffRecord = async (req, res, next) => {
 
 // Delete a staff record by ID
 const deleteStaffRecord = async (req, res, next) => {
+    const { id } = req.params;
+
     try {
-        const { id } = req.params;
         const deletedStaff = await Staff.findByIdAndDelete(id);
+
         if (!deletedStaff) {
-            return next(errorHandling(404, 'Staff member not found'));
+            return next(errorHandling(404, 'Staff record not found'));
         }
-        res.status(200).json({ message: 'Staff member deleted successfully' });
+
+        res.status(200).json({ message: 'Staff record deleted successfully' });
     } catch (error) {
         next(error);
     }
@@ -67,16 +94,19 @@ const deleteStaffRecord = async (req, res, next) => {
 
 // Assign work schedule to a staff member
 const assignWorkSchedule = async (req, res, next) => {
+    const { id, workDays, workHours } = req.body;
+
     try {
-        const { id, workDays, workHours } = req.body; // assuming the request contains staff ID, work days, and work hours
-        const staff = await Staff.findById(id);
-        if (!staff) {
-            return next(errorHandling(404, 'Staff member not found'));
+        const staffRecord = await Staff.findById(id);
+
+        if (!staffRecord) {
+            return next(errorHandling(404, 'Staff record not found'));
         }
-        staff.workDays = workDays;
-        staff.workHours = workHours;
-        await staff.save();
-        res.status(200).json({ message: 'Work schedule assigned successfully', staff });
+
+        staffRecord.workSchedule = { workDays, workHours };
+        await staffRecord.save();
+
+        res.status(200).json({ message: 'Work schedule assigned successfully', staff: staffRecord });
     } catch (error) {
         next(error);
     }
@@ -85,10 +115,24 @@ const assignWorkSchedule = async (req, res, next) => {
 // Generate a sign-up code for new staff members
 const generateSignUpCode = async (req, res, next) => {
     try {
-        const { farm_id } = req.body; // assuming the request contains the farm ID
-        const code = Math.random().toString(36).substr(2, 8); // generate a simple random code
-        // Here you can store the code in the database associated with the farm if needed
-        res.status(200).json({ message: 'Sign-up code generated successfully', code });
+        const { role, suggestedUsername } = req.body;
+
+        // Generate a unique code
+        const code = crypto.randomBytes(6).toString('hex');
+
+        // Set expiration time (e.g., 24 hours from now)
+        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+        const newCode = new SignUpCode({
+            code,
+            role,
+            suggestedUsername,
+            expiresAt,
+        });
+
+        await newCode.save();
+
+        res.status(201).json({ message: 'Sign-up code generated successfully', code });
     } catch (error) {
         next(error);
     }
