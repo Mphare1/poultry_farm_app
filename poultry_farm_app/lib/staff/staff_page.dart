@@ -53,7 +53,8 @@ class _StaffPageState extends State<StaffPage> {
   }
 
   Future<void> _createStaff() async {
-    if (_areFieldsEmpty([_nameController.text, _emailController.text, _roleController.text])) {
+    if (_areFieldsEmpty(
+        [_nameController.text, _emailController.text, _roleController.text])) {
       _showSnackBar('All fields are required');
       return;
     }
@@ -194,7 +195,8 @@ class _StaffPageState extends State<StaffPage> {
               _buildTextField(_nameController, 'Name'),
               _buildTextField(_emailController, 'Email'),
               _buildTextField(_roleController, 'Role'),
-              if (title == 'Add Staff') _buildTextField(_scheduleController, 'Schedule'),
+              if (title == 'Add Staff')
+                _buildTextField(_scheduleController, 'Schedule'),
             ],
           ),
           actions: [
@@ -273,7 +275,8 @@ class _StaffPageState extends State<StaffPage> {
   }
 
   void _showSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 
   void _clearFields() {
@@ -329,8 +332,7 @@ class _StaffPageState extends State<StaffPage> {
                         child: ListTile(
                           title: Text(
                             staff['name'],
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                           subtitle: Text('Role: ${staff['role']}'),
                           trailing: Row(
@@ -366,5 +368,3 @@ class _StaffPageState extends State<StaffPage> {
     );
   }
 }
-
-         
