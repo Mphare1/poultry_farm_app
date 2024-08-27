@@ -24,7 +24,6 @@ class _loginScreenState extends State<loginScreen> {
       return;
     }
 
-    // Replace with your backend endpoint
     const String url = 'http://10.0.2.2:3000/api/auth/signin';
 
     final response = await http.post(
@@ -37,11 +36,17 @@ class _loginScreenState extends State<loginScreen> {
     );
 
     if (response.statusCode == 200) {
+      // Extract the farmId from the response
+      final responseData = json.decode(response.body);
+      final String farmId = responseData['farmId'] ?? '';
+
       // Successfully logged in
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Login successful')),
       );
-      Navigator.pushReplacementNamed(context, '/dashboard');
+
+      // Navigate to MainScreen with farmId
+      Navigator.pushReplacementNamed(context, '/dashboard', arguments: farmId);
     } else {
       // Error occurred
       ScaffoldMessenger.of(context).showSnackBar(
