@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'dashboard_screen.dart';
 
 class MainScreen extends StatefulWidget {
+  final String farmId;
+
+  const MainScreen({Key? key, required this.farmId}) : super(key: key);
+
   @override
   _MainScreenState createState() => _MainScreenState();
 }
@@ -9,9 +13,16 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
-  final List<Widget> _screens = [
-    DashboardScreen(),
-  ];
+  late final List<Widget> _screens;
+
+  @override
+  void initState() {
+    super.initState();
+    _screens = [
+      DashboardScreen(farmId: widget.farmId),
+      // Add other screens here, such as Messaging and Profile
+    ];
+  }
 
   void _onItemTapped(int index) {
     setState(() {

@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:table_calendar/table_calendar.dart';
 
 class StaffPage extends StatefulWidget {
-  final String farmId; // Farm ID passed dynamically
+  final String farmId;
 
   const StaffPage({Key? key, required this.farmId}) : super(key: key);
 
@@ -26,6 +26,15 @@ class _StaffPageState extends State<StaffPage> {
     _fetchStaffRecords();
   }
 
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _roleController.dispose();
+    _scheduleController.dispose();
+    super.dispose();
+  }
+
   Future<void> _fetchStaffRecords() async {
     try {
       final response = await http.get(
@@ -39,21 +48,13 @@ class _StaffPageState extends State<StaffPage> {
         throw Exception('Failed to load staff records');
       }
     } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${error.toString()}')),
-      );
+      _showSnackBar('Error: ${error.toString()}');
     }
   }
 
   Future<void> _createStaff() async {
-    final String name = _nameController.text;
-    final String email = _emailController.text;
-    final String role = _roleController.text;
-
-    if (name.isEmpty || email.isEmpty || role.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('All fields are required')),
-      );
+    if (_areFieldsEmpty([_nameController.text, _emailController.text, _roleController.text])) {
+      _showSnackBar('All fields are required');
       return;
     }
 
@@ -62,41 +63,29 @@ class _StaffPageState extends State<StaffPage> {
         Uri.parse('http://10.0.2.2:3000/api/staff'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
-          'name': name,
-          'email': email,
-          'role': role,
+          'name': _nameController.text,
+          'email': _emailController.text,
+          'role': _roleController.text,
           'farm_id': widget.farmId,
         }),
       );
 
       if (response.statusCode == 201) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Staff added successfully')),
-        );
-        _fetchStaffRecords(); // Refresh staff list
-        Navigator.of(context).pop(); // Close the dialog
+        _showSnackBar('Staff added successfully');
+        _fetchStaffRecords();
+        Navigator.of(context).pop();
       } else {
         final responseData = json.decode(response.body);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text('Failed to add staff: ${responseData['message']}')),
-        );
+        _showSnackBar('Failed to add staff: ${responseData['message']}');
       }
     } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Network error: ${error.toString()}')),
-      );
+      _showSnackBar('Network error: ${error.toString()}');
     }
   }
 
   Future<void> _updateStaff(String id) async {
-    final String name = _nameController.text;
-    final String role = _roleController.text;
-
-    if (name.isEmpty || role.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Name and Role are required')),
-      );
+    if (_areFieldsEmpty([_nameController.text, _roleController.text])) {
+      _showSnackBar('Name and Role are required');
       return;
     }
 
@@ -105,29 +94,21 @@ class _StaffPageState extends State<StaffPage> {
         Uri.parse('http://10.0.2.2:3000/api/staff/$id'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
-          'name': name,
-          'role': role,
+          'name': _nameController.text,
+          'role': _roleController.text,
         }),
       );
 
       if (response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Staff updated successfully')),
-        );
-        _fetchStaffRecords(); // Refresh staff list
-        Navigator.of(context).pop(); // Close the dialog
+        _showSnackBar('Staff updated successfully');
+        _fetchStaffRecords();
+        Navigator.of(context).pop();
       } else {
         final responseData = json.decode(response.body);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content:
-                  Text('Failed to update staff: ${responseData['message']}')),
-        );
+        _showSnackBar('Failed to update staff: ${responseData['message']}');
       }
     } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Network error: ${error.toString()}')),
-      );
+      _showSnackBar('Network error: ${error.toString()}');
     }
   }
 
@@ -138,30 +119,20 @@ class _StaffPageState extends State<StaffPage> {
       );
 
       if (response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Staff deleted successfully')),
-        );
-        _fetchStaffRecords(); // Refresh staff list
+        _showSnackBar('Staff deleted successfully');
+        _fetchStaffRecords();
       } else {
         final responseData = json.decode(response.body);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content:
-                  Text('Failed to delete staff: ${responseData['message']}')),
-        );
+        _showSnackBar('Failed to delete staff: ${responseData['message']}');
       }
     } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Network error: ${error.toString()}')),
-      );
+      _showSnackBar('Network error: ${error.toString()}');
     }
   }
 
   Future<void> _assignSchedule(String staffId) async {
     if (_selectedDate == null || _scheduleController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Date and Schedule are required')),
-      );
+      _showSnackBar('Date and Schedule are required');
       return;
     }
 
@@ -177,71 +148,30 @@ class _StaffPageState extends State<StaffPage> {
       );
 
       if (response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Schedule assigned successfully')),
-        );
-        _selectedDate = null; // Clear selected date
-        _scheduleController.clear(); // Clear schedule text
-        Navigator.of(context).pop(); // Close the dialog
+        _showSnackBar('Schedule assigned successfully');
+        _resetScheduleForm();
+        Navigator.of(context).pop();
       } else {
         final responseData = json.decode(response.body);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(
-                  'Failed to assign schedule: ${responseData['message']}')),
-        );
+        _showSnackBar('Failed to assign schedule: ${responseData['message']}');
       }
     } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Network error: ${error.toString()}')),
-      );
+      _showSnackBar('Network error: ${error.toString()}');
     }
   }
 
+  bool _areFieldsEmpty(List<String> fields) {
+    return fields.any((field) => field.isEmpty);
+  }
+
+  void _resetScheduleForm() {
+    _selectedDate = null;
+    _scheduleController.clear();
+  }
+
   void _showAddStaffDialog() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('Add Staff'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: _nameController,
-                decoration: InputDecoration(labelText: 'Name'),
-              ),
-              TextField(
-                controller: _emailController,
-                decoration: InputDecoration(labelText: 'Email'),
-              ),
-              TextField(
-                controller: _roleController,
-                decoration: InputDecoration(labelText: 'Role'),
-              ),
-              TextField(
-                controller: _scheduleController,
-                decoration: InputDecoration(labelText: 'Schedule'),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                _createStaff();
-              },
-              child: Text('Add'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Cancel'),
-            ),
-          ],
-        );
-      },
-    );
+    _clearFields();
+    _showStaffDialog('Add Staff', _createStaff);
   }
 
   void _showUpdateStaffDialog(String id) {
@@ -249,35 +179,31 @@ class _StaffPageState extends State<StaffPage> {
     _nameController.text = staff['name'];
     _roleController.text = staff['role'];
 
+    _showStaffDialog('Update Staff', () => _updateStaff(id));
+  }
+
+  void _showStaffDialog(String title, VoidCallback onConfirm) {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Update Staff'),
+          title: Text(title),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextField(
-                controller: _nameController,
-                decoration: InputDecoration(labelText: 'Name'),
-              ),
-              TextField(
-                controller: _roleController,
-                decoration: InputDecoration(labelText: 'Role'),
-              ),
+              _buildTextField(_nameController, 'Name'),
+              _buildTextField(_emailController, 'Email'),
+              _buildTextField(_roleController, 'Role'),
+              if (title == 'Add Staff') _buildTextField(_scheduleController, 'Schedule'),
             ],
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                _updateStaff(id);
-              },
-              child: Text('Update'),
+              onPressed: onConfirm,
+              child: Text(title.split(' ')[0]), // 'Add' or 'Update'
             ),
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+              onPressed: () => Navigator.of(context).pop(),
               child: Text('Cancel'),
             ),
           ],
@@ -287,6 +213,7 @@ class _StaffPageState extends State<StaffPage> {
   }
 
   void _showAssignScheduleDialog(String staffId) {
+    _scheduleController.clear();
     showDialog(
       context: context,
       builder: (context) {
@@ -295,23 +222,16 @@ class _StaffPageState extends State<StaffPage> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextField(
-                controller: _scheduleController,
-                decoration: InputDecoration(labelText: 'Schedule'),
-              ),
+              _buildTextField(_scheduleController, 'Schedule'),
             ],
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                _assignSchedule(staffId);
-              },
+              onPressed: () => _assignSchedule(staffId),
               child: Text('Assign'),
             ),
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+              onPressed: () => Navigator.of(context).pop(),
               child: Text('Cancel'),
             ),
           ],
@@ -336,9 +256,7 @@ class _StaffPageState extends State<StaffPage> {
               child: Text('Delete'),
             ),
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+              onPressed: () => Navigator.of(context).pop(),
               child: Text('Cancel'),
             ),
           ],
@@ -347,14 +265,32 @@ class _StaffPageState extends State<StaffPage> {
     );
   }
 
+  TextField _buildTextField(TextEditingController controller, String label) {
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(labelText: label),
+    );
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  void _clearFields() {
+    _nameController.clear();
+    _emailController.clear();
+    _roleController.clear();
+    _scheduleController.clear();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Staff Management'),
+        title: const Text('Staff Management'),
         actions: [
           IconButton(
-            icon: Icon(Icons.add),
+            icon: const Icon(Icons.add),
             onPressed: _showAddStaffDialog,
           ),
         ],
@@ -378,43 +314,57 @@ class _StaffPageState extends State<StaffPage> {
               });
             },
           ),
+          const SizedBox(height: 10),
           Expanded(
-            child: ListView.builder(
-              itemCount: _staffList.length,
-              itemBuilder: (context, index) {
-                final staff = _staffList[index];
-                return ListTile(
-                  title: Text(staff['name']),
-                  subtitle: Text(staff['role']),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: Icon(Icons.edit),
-                        onPressed: () {
-                          _showUpdateStaffDialog(staff['_id']);
-                        },
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.delete),
-                        onPressed: () {
-                          _showDeleteStaffDialog(staff['_id']);
-                        },
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.schedule),
-                        onPressed: () {
-                          _showAssignScheduleDialog(staff['_id']);
-                        },
-                      ),
-                    ],
+            child: _staffList.isEmpty
+                ? const Center(child: Text('No staff found.'))
+                : ListView.builder(
+                    itemCount: _staffList.length,
+                    itemBuilder: (context, index) {
+                      final staff = _staffList[index];
+                      return Card(
+                        elevation: 2,
+                        margin: const EdgeInsets.symmetric(
+                            vertical: 8, horizontal: 16),
+                        child: ListTile(
+                          title: Text(
+                            staff['name'],
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Text('Role: ${staff['role']}'),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.edit),
+                                onPressed: () {
+                                  _showUpdateStaffDialog(staff['_id']);
+                                },
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete),
+                                onPressed: () {
+                                  _showDeleteStaffDialog(staff['_id']);
+                                },
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.schedule),
+                                onPressed: () {
+                                  _showAssignScheduleDialog(staff['_id']);
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
           ),
         ],
       ),
     );
   }
 }
+
+         

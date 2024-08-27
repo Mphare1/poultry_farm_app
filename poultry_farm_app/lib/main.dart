@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:poultry_farm_app/staff/staff_page.dart';
 import 'package:poultry_farm_app/welcome_screen.dart';
 import 'utils/color_utils.dart';
 import 'screens/dashboard_screen.dart';
@@ -14,14 +15,26 @@ class PoultryFarmApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       initialRoute: '/',
+      onGenerateRoute: (settings) {
+        if (settings.name == '/dashboard') {
+          final String farmId = settings.arguments as String;
+          return MaterialPageRoute(
+            builder: (context) => DashboardScreen(farmId: farmId),
+          );
+        } else if (settings.name == '/staff') {
+          final String farmId = settings.arguments as String;
+          return MaterialPageRoute(
+            builder: (context) => StaffPage(farmId: farmId),
+          );
+        }
+        return null;
+      },
       routes: {
         '/': (context) => const WelcomeScreen(),
         '/login': (context) => const loginScreen(),
-        '/dashboard': (context) =>
-            DashboardScreen(), // Define your DashboardScreen here
       },
       theme: ThemeData(
-        primarySwatch: createMaterialColor(Color.fromARGB(255, 145, 0, 150)),
+        primarySwatch: createMaterialColor(const Color.fromARGB(255, 145, 0, 150)),
         fontFamily: 'Roboto',
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
