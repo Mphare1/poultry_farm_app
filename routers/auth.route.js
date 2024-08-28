@@ -3,8 +3,9 @@ const { signup, signin, generateSignUpCode, signupWithCode } = require('../contr
 
 const router = express.Router();
 
-router.post('/signup', signup);
-router.post('/signin', signin);
+// Routes for authentication
+router.post('/signup', signup); // Standard sign-up
+router.post('/signin', signin); // Sign in
 router.post('/generate-signup-code', generateSignUpCode); // For managers/owners to generate codes
 router.post('/signup-with-code', signupWithCode); // For users to sign up using the code
 

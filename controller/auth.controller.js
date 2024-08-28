@@ -1,6 +1,7 @@
 const User = require("../model/user.model.js");
-const Farm = require("../model/farm.model.js");  // Import the Farm model
+const Farm = require("../model/farm.model.js");
 const SignUpCode = require('../model/signUpCode.model.js');
+const Staff = require('../model/staff.model.js');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const errorHandling = require("../utils/error.js");
@@ -9,7 +10,14 @@ const crypto = require('crypto');
 // Function to generate a one-time sign-up code
 const generateSignUpCode = async (req, res, next) => {
     try {
-        const { role, suggestedUsername } = req.body;
+        const { role } = req.body;
+
+        // Log incoming request data
+        console.log('Request to generate sign-up code:', req.body);
+
+        if (!role) {
+            return next(errorHandling(400, 'Role is required'));
+        }
 
         // Generate a unique code
         const code = crypto.randomBytes(6).toString('hex');
@@ -20,7 +28,6 @@ const generateSignUpCode = async (req, res, next) => {
         const newCode = new SignUpCode({
             code,
             role,
-            suggestedUsername,
             expiresAt,
         });
 
@@ -28,6 +35,7 @@ const generateSignUpCode = async (req, res, next) => {
 
         res.status(201).json({ message: 'Sign-up code generated successfully', code });
     } catch (error) {
+        console.error('Error generating sign-up code:', error);
         next(error);
     }
 };
@@ -35,6 +43,9 @@ const generateSignUpCode = async (req, res, next) => {
 // Sign-up function using a one-time code
 const signupWithCode = async (req, res, next) => {
     const { code, email, password, farm_id } = req.body;
+
+    // Log incoming request data
+    console.log('Request to sign up with code:', req.body);
 
     if (!code || !email || !password || !farm_id) {
         return next(errorHandling(400, 'All fields are required'));
@@ -48,10 +59,11 @@ const signupWithCode = async (req, res, next) => {
             return next(errorHandling(400, 'Invalid or expired sign-up code'));
         }
 
+        // Create a new user
         const hashPassword = bcrypt.hashSync(password, 10);
 
         const newUser = new User({
-            username: signUpCode.suggestedUsername || email.split('@')[0],
+            username,
             email,
             password: hashPassword,
             role: signUpCode.role,
@@ -60,11 +72,22 @@ const signupWithCode = async (req, res, next) => {
 
         await newUser.save();
 
+        // Create the staff record
+        const newStaff = new Staff({
+            farm_id,
+            user_id: newUser._id, // Set the user_id now that it's available
+            work_days: [],
+            work_hours: { start: '', end: '' }, // Default work days and hours
+        });
+
+        await newStaff.save();
+
         // Remove the used sign-up code
         await SignUpCode.findByIdAndDelete(signUpCode._id);
 
-        res.status(201).json({ message: 'User created successfully' });
+        res.status(201).json({ message: 'User and staff created successfully' });
     } catch (error) {
+        console.error('Error during signup with code:', error);
         next(error);
     }
 };
@@ -72,6 +95,9 @@ const signupWithCode = async (req, res, next) => {
 // Standard sign-up function with farm creation for owners/managers
 const signup = async (req, res, next) => {
     const { username, email, password, role, farm_name } = req.body;
+
+    // Log incoming request data
+    console.log('Request to standard sign-up:', req.body);
 
     if (!username || !email || !password || !role) {
         return next(errorHandling(400, 'All fields are required'));
@@ -107,6 +133,7 @@ const signup = async (req, res, next) => {
 
         res.status(201).json({ message: 'User and farm created successfully' });
     } catch (error) {
+        console.error('Error during standard signup:', error);
         next(error);
     }
 };
@@ -114,6 +141,9 @@ const signup = async (req, res, next) => {
 // Sign-in function
 const signin = async (req, res, next) => {
     const { email, password } = req.body;
+
+    // Log incoming request data
+    console.log('Request to sign in:', req.body);
 
     if (!email || !password || email === '' || password === '') {
         return next(errorHandling(400, 'All fields are required'));
@@ -138,6 +168,7 @@ const signin = async (req, res, next) => {
             httpOnly: true,
         }).json(rest);
     } catch (error) {
+        console.error('Error during sign-in:', error);
         next(error);
     }
 };

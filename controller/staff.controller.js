@@ -1,4 +1,4 @@
-const Staff = require('../model/staff.model'); // Assuming you have a Staff model
+const Staff = require('../model/staff.model'); // Import the Staff model
 const Farm = require('../model/farm.model');  // Import the Farm model
 const SignUpCode = require('../model/signUpCode.model'); 
 const errorHandling = require("../utils/error.js");
@@ -26,14 +26,19 @@ const createStaffRecord = async (req, res, next) => {
     }
 };
 
+
 // Get all staff records for a specific farm
 const getStaffRecords = async (req, res, next) => {
     const { farm_id } = req.params;
+
+    // Log incoming request data
+    console.log('Request to get staff records for farm:', farm_id);
 
     try {
         const staffRecords = await Staff.find({ farm: farm_id });
         res.status(200).json(staffRecords);
     } catch (error) {
+        console.error('Error fetching staff records:', error);
         next(error);
     }
 };
@@ -42,6 +47,9 @@ const getStaffRecords = async (req, res, next) => {
 const getStaffRecord = async (req, res, next) => {
     const { id } = req.params;
 
+    // Log incoming request data
+    console.log('Request to get staff record by ID:', id);
+
     try {
         const staffRecord = await Staff.findById(id);
         if (!staffRecord) {
@@ -49,6 +57,7 @@ const getStaffRecord = async (req, res, next) => {
         }
         res.status(200).json(staffRecord);
     } catch (error) {
+        console.error('Error fetching staff record:', error);
         next(error);
     }
 };
@@ -57,6 +66,9 @@ const getStaffRecord = async (req, res, next) => {
 const updateStaffRecord = async (req, res, next) => {
     const { id } = req.params;
     const { name, role } = req.body;
+
+    // Log incoming request data
+    console.log('Request to update staff record:', { id, name, role });
 
     try {
         const updatedStaff = await Staff.findByIdAndUpdate(
@@ -71,6 +83,7 @@ const updateStaffRecord = async (req, res, next) => {
 
         res.status(200).json({ message: 'Staff record updated successfully', staff: updatedStaff });
     } catch (error) {
+        console.error('Error updating staff record:', error);
         next(error);
     }
 };
@@ -78,6 +91,9 @@ const updateStaffRecord = async (req, res, next) => {
 // Delete a staff record by ID
 const deleteStaffRecord = async (req, res, next) => {
     const { id } = req.params;
+
+    // Log incoming request data
+    console.log('Request to delete staff record by ID:', id);
 
     try {
         const deletedStaff = await Staff.findByIdAndDelete(id);
@@ -88,6 +104,7 @@ const deleteStaffRecord = async (req, res, next) => {
 
         res.status(200).json({ message: 'Staff record deleted successfully' });
     } catch (error) {
+        console.error('Error deleting staff record:', error);
         next(error);
     }
 };
@@ -95,6 +112,9 @@ const deleteStaffRecord = async (req, res, next) => {
 // Assign work schedule to a staff member
 const assignWorkSchedule = async (req, res, next) => {
     const { id, workDays, workHours } = req.body;
+
+    // Log incoming request data
+    console.log('Request to assign work schedule:', { id, workDays, workHours });
 
     try {
         const staffRecord = await Staff.findById(id);
@@ -108,15 +128,19 @@ const assignWorkSchedule = async (req, res, next) => {
 
         res.status(200).json({ message: 'Work schedule assigned successfully', staff: staffRecord });
     } catch (error) {
+        console.error('Error assigning work schedule:', error);
         next(error);
     }
 };
 
 // Generate a sign-up code for new staff members
 const generateSignUpCode = async (req, res, next) => {
-    try {
-        const { role, suggestedUsername } = req.body;
+    const { role, suggestedUsername } = req.body;
 
+    // Log incoming request data
+    console.log('Request to generate sign-up code for staff:', req.body);
+
+    try {
         // Generate a unique code
         const code = crypto.randomBytes(6).toString('hex');
 
@@ -134,6 +158,7 @@ const generateSignUpCode = async (req, res, next) => {
 
         res.status(201).json({ message: 'Sign-up code generated successfully', code });
     } catch (error) {
+        console.error('Error generating sign-up code for staff:', error);
         next(error);
     }
 };

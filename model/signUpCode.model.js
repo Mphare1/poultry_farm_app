@@ -16,7 +16,7 @@ const signUpCodeSchema = new mongoose.Schema({
     },
     expiresAt: {
         type: Date,
-        required: true,
+        required: false,
     },
 }, { timestamps: true });
 

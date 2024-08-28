@@ -1,4 +1,5 @@
 const express = require('express');
+const router = express.Router();
 const {
     createStaffRecord,
     getStaffRecords,
@@ -7,29 +8,27 @@ const {
     deleteStaffRecord,
     assignWorkSchedule,
     generateSignUpCode
-} = require('../controllers/staff.controller');
+} = require('../controller/staff.controller');
 
-const router = express.Router();
-
-// Route to create a new staff record
+// Create a new staff record
 router.post('/', createStaffRecord);
 
-// Route to generate a sign-up code for new staff members
-router.post('/generate-code', generateSignUpCode);
+// Get all staff records for a specific farm
+router.get('/:farm_id', getStaffRecords);
 
-// Route to get all staff records for a specific farm
-router.get('/farm/:farm_id', getStaffRecords);
+// Get a single staff record by ID
+router.get('/record/:id', getStaffRecord);
 
-// Route to get a single staff record by ID
-router.get('/:id', getStaffRecord);
-
-// Route to update a staff record by ID
+// Update a staff record by ID
 router.put('/:id', updateStaffRecord);
 
-// Route to delete a staff record by ID
+// Delete a staff record by ID
 router.delete('/:id', deleteStaffRecord);
 
-// Route to assign work schedule to a staff member
+// Assign work schedule to a staff member
 router.post('/assign-schedule', assignWorkSchedule);
+
+// Generate a sign-up code
+router.post('/generate-sign-up-code', generateSignUpCode);
 
 module.exports = router;
