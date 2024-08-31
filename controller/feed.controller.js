@@ -1,4 +1,4 @@
-const Feed = require('../models/feed.model');
+const Feed = require('../model/feed.model');
 
 const createFeedRecord = async (req, res, next) => {
     try {

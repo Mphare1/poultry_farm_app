@@ -4,7 +4,7 @@ const {
     getInventory,
     updateInventoryItem,
     deleteInventoryItem
-} = require('../controllers/inventory.controller');
+} = require('../controller/inventory.controller');
 
 const router = express.Router();
 
@@ -12,7 +12,7 @@ const router = express.Router();
 router.post('/', createInventoryItem);
 
 // Route to get all inventory items for a farm
-router.get('/:farm_id', getInventory);
+router.get('/:farmId', getInventory); // Updated to match the parameter used in the controller
 
 // Route to update an inventory item by ID
 router.put('/:id', updateInventoryItem);

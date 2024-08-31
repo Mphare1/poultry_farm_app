@@ -6,6 +6,7 @@ const app = express();
 const userRouter = require('./routers/user.route.js');
 const authRouter = require('./routers/auth.route.js');
 const staffRouter = require('./routers/staff.route.js');
+const inventoryRouter = require('./routers/inventory.route.js'); // Added inventory routes
 
 dotenv.config(); // Load environment variables from .env file
 
@@ -26,6 +27,7 @@ app.use(express.json());
 app.use('/api/user', userRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/staff', staffRouter);
+app.use('/api/inventory', inventoryRouter); // Added inventory routes
 
 // Error handling middleware
 app.use((err, req, res, next) => {

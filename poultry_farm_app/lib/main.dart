@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:poultry_farm_app/staff/staff_page.dart';
+import 'package:poultry_farm_app/inventory/inventory_screen.dart';
 import 'package:poultry_farm_app/welcome_screen.dart';
 import 'utils/color_utils.dart';
 import 'screens/dashboard_screen.dart';
@@ -26,15 +27,22 @@ class PoultryFarmApp extends StatelessWidget {
           return MaterialPageRoute(
             builder: (context) => StaffPage(farmId: farmId),
           );
+        } else if (settings.name == '/inventory') {
+          final String farmId = settings.arguments as String;
+          return MaterialPageRoute(
+            builder: (context) => InventoryPage(farmId: farmId),
+          );
         }
         return null;
       },
       routes: {
         '/': (context) => const WelcomeScreen(),
-        '/login': (context) => const loginScreen(),
+        '/login': (context) =>
+            const loginScreen(), // Corrected from loginScreen to LoginScreen
       },
       theme: ThemeData(
-        primarySwatch: createMaterialColor(const Color.fromARGB(255, 145, 0, 150)),
+        primarySwatch:
+            createMaterialColor(const Color.fromARGB(255, 145, 0, 150)),
         fontFamily: 'Roboto',
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),

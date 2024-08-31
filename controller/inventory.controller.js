@@ -1,17 +1,21 @@
-const Inventory = require('../models/inventory.model');
+const { request } = require("express");
+
+const Inventory = require('../model/inventory.model');
 
 const createInventoryItem = async (req, res, next) => {
     try {
-        const { farm_id, type, item, quantity, notes } = req.body;
+        const { farm, type, quantity, age, feed, healthStatus, eggsCollected, weight } = req.body;
 
         const newItem = new Inventory({
-            farm_id,
+            farm,
             type,
-            item,
             quantity,
-            notes,
+            age,
+            feed,
+            healthStatus,
+            eggsCollected,
+            weight
         });
-
         await newItem.save();
         res.status(201).json({ message: 'Inventory item created successfully' });
     } catch (error) {
@@ -21,7 +25,7 @@ const createInventoryItem = async (req, res, next) => {
 
 const getInventory = async (req, res, next) => {
     try {
-        const inventory = await Inventory.find({ farm_id: req.params.farm_id });
+        const inventory = await Inventory.find({ farm: req.params.farmId });
         res.status(200).json(inventory);
     } catch (error) {
         next(error);

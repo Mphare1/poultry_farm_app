@@ -17,7 +17,7 @@ const inventorySchema = new mongoose.Schema({
         required: true,
     },
     age: {
-        type: Number, // in weeks or days, depending on what you prefer
+        type: Number, // in weeks or days
         required: true,
     },
     feed: {
